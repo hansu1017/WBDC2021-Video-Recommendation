@@ -46,8 +46,8 @@ Besides, example_train.csv and example_test.csv are the training set and test se
 
 ## Input  format
 A single sample is a patient with ASVs and host variables where the ASVs must be named begin with 'asv'.
-| **SampleID** | **asv1**  /**age**|
-| ----------------- | --------- |
+| **SampleID** | **asv1**  | **age**|
+| ---------- | --------- | --------- |
 | 1             | 0.1        |1      |
 | 2             | 0.05      |3      |
 | 3             | 0.07      |2      |
