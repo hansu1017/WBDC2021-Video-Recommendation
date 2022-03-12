@@ -32,7 +32,9 @@ The ASV of 16S rRNA gene amplicons were analyzed by *Deblur*, and taxonomy was a
 The original dataset has 438,779 ASVs, to eliminate sparsity of ASVs, we performed a distribution-free independence test based on *mean variance index*, and selected out 844 ASVs.
 
 \*Amir, A., et al., Deblur rapidly resolves single-nucleotide community sequence patterns. MSystems, 2017. 2(2): p. e00191-16.
+
 \*Chen, Y., et al., Parallel-Meta Suite: interactive and rapid microbiome data analysis on multiple platforms. iMeta, 2022.
+
 \*Cui, H., R. Li, and W. Zhong, Model-free feature screening for ultrahigh dimensional discriminant analysis. Journal of the American Statistical Association, 2015. 110(510): p. 630-641.
 
 ## Dataset
