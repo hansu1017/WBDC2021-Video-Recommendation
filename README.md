@@ -5,10 +5,10 @@
 - [Introduction](#introduction)
 - [Package requirement](#package-requirement)
 - [Pre-computing](#pre-computing)
-- [Experiment dataset](#experiment-dataset)
-- [Run Example](#run-example)
+- [Dataset](#dataset)
 - [Input and output format](#input-and-output-format)
-- [Instructions for Meta-Spec](#instructions-for-meta-spec)
+- [Run example](#run-example)
+- [Run experiment](#run-experiment)
 - [Supplementary](#supplementary)
 - [Citation](#citation)
 - [Contact](#contact)
@@ -28,23 +28,19 @@ sh init.sh
 ```
 
 ## Pre-computing
+The ASV of 16S rRNA gene amplicons were analyzed by *Deblur*, and taxonomy was annotated by GreenGenes 13-8 database using *Parallel-Meta Suite*. The 16srRNA sequences and the information of ASVs are in the asv_info folder. 
+The original dataset has 438,779 ASVs, to eliminate sparsity of ASVs, we performed a distribution-free independence test based on *mean variance index*, and selected out 844 ASVs.
 
+\*Amir, A., et al., Deblur rapidly resolves single-nucleotide community sequence patterns. MSystems, 2017. 2(2): p. e00191-16.
+\*Chen, Y., et al., Parallel-Meta Suite: interactive and rapid microbiome data analysis on multiple platforms. iMeta, 2022.
+\*Cui, H., R. Li, and W. Zhong, Model-free feature screening for ultrahigh dimensional discriminant analysis. Journal of the American Statistical Association, 2015. 110(510): p. 630-641.
 
-## Experiment dataset
-Here we provide the dataset used in our paper. The dataset includes 11,936 subjects including 4437 healthy controls and 7502 patients with 844 ASVs and 56 host variables which are collected from *McDonald, D., et al.*.
+## Dataset
+In data folder, we provide the datasets to reproduce the experiment results and run an example for Meta-Spec. 
+The dataset AGP.csv includes 4437 healthy controls and 7502 patients with 844 ASVs and 56 host variables which are collected from *McDonald, D., et al.*.
+Besides, example_train.csv and example_test.csv are the training set and test set to run an example which contain 800 and 200 samples respectively.
 
 \* McDonald, D., et al., American gut: an open platform for citizen science microbiome research. Msystems, 2018. 3(3): p. e00031-18.
-
-## Run example
-
-```
-cd Codes/inference/
-```
-
-- Run host_variable_features.ipynb to generate host_variable.csv in data file
-- Run rf.ipynb and lgb.ipynb to obtain results of Random Forest, Lightgbm
-- Run meta_spec_without_hostvar.ipynb to get results of Meta-Spec without host variables
-- Run meta_spec.ipynb to get results of Meta-Spec
 
 ## Input  format
 A single sample is a patient with ASVs and host variables where the ASVs must be named begin with 'asv'.
@@ -54,39 +50,46 @@ A single sample is a patient with ASVs and host variables where the ASVs must be
 | 2             | 0.05      |3      |
 | 3             | 0.07      |2      |
 
-## Instructions for Meta-Spec
-Here are basic steps to train Meta-Spec. First, use Dataset function to preprocess data where the pickle files are the indexes of training set and test set. Then, user df.get_train_test(0) to split the data and use df.deal_feat() to get features.
-Besides, df.get_input(train, test) is able to obtain input for the Meta-Spec. Finally, use MMOE function to train the model and evaluation function to get AUC and f1-scores.
+## Run example
 
+To run Meta-Spec, you need to run train_model.py, the auc and f1-scores will be print and the results will be saved in the current folder.
 ```
-import torch
-from model.mmoe_ifm_ew import MMOE
-from utility.dataset import Dataset
-from utility.eval_mmoe_train import evaluation
-
-df = Dataset(data, 'train_index.pickle', 'test_index.pickle',  ['ibs', 'thyroid', 'migraine'])
-train, test = df.get_train_test(0)
-feats = df.deal_feat()
-dnn_feature_columns, train_model_input, test_model_input, train_labels = df.get_input(train, test) 
-
-train_model = MMOE(dnn_feature_columns, num_tasks=3, num_experts=7, dnn_hidden_units=(256,128),
-                                   tasks=['binary', 'binary', 'binary'], device=device)
-train_model.compile("adagrad", loss='binary_crossentropy')
-for epoch in range(2):
-	history = train_model.fit(train_model_input, train_labels, batch_size=64, epochs=4, verbose=1)
-test_pred_ans = train_model.predict(test_model_input, batch_size=512) 
-test_pred_ans = test_pred_ans.transpose()
-df.save_result(test_pred_ans, test, 'res')
-
-res = evaluation(data, 'res',  ['ibs', 'thyroid', 'migraine'])
+cd Codes/inference/
+python train_model.py train_path test_path diseases_name n_expert hidden_unit1 hidden_unit2  is_print_evaluation
 ```
+For example:
+```
+python train_model.py '../data/example_train.csv' '../data/example_test.csv' 'ibs thyroid migraine autoimmune lung_disease' 7 128 64 True
+```
+Then you can generate the bar plot of each disease by the following commends. The figures will also be saved in the current folder.
+```
+python train_shap.py train_path test_path diseases_name n_expert hidden_unit1 hidden_unit2 host_variables_num
+python plot_shap.py train_path test_path diseases_name host_variables_num asv_num sample_num max_bar
+```
+For example:
+```
+python train_shap.py '../data/example_train.csv' '../data/example_test.csv' 'ibs thyroid migraine autoimmune lung_disease' 7 128 64 56
+python plot_shap.py '../data/example_test.csv' 'ibs thyroid migraine autoimmune lung_disease' 56 100 200 60
+```
+
+## Run experiment
+- Create res folder to save results
+```
+cd Codes/experiment
+mkdir res
+```
+- Run rf.ipynb and lgb.ipynb to obtain results of Random Forest, Lightgbm
+- Run meta_spec_without_hostvar.ipynb to get results of Meta-Spec without host variables
+- Run meta_spec.ipynb to get results of Meta-Spec
+
 
 ## Supplementary
-The encoding of host variables and some additional charts are provided in the supplementary files.
+Some supplementary materials are provided in Supplementary folder. 
+Supplementary1 is the encoding of host variables and supplementary2 is the introduction for some addtional figures.
 
 ## Citation
 
 
 ## Contact
 All problems please contact Meta-Spec development team: 
-**Shunyao Wu**&nbsp;&nbsp;&nbsp;&nbsp;Email: wushunyao@qdu.edu.cn
+**Xiaoquan Su**&nbsp;&nbsp;&nbsp;&nbsp;Email: suxq@qdu.edu.cn
