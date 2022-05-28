@@ -7,7 +7,11 @@
 
 # 代码流程
 generate_sample.py：生成样本
+
 generate_features.py：生成树模型特征
+
 prepare_for_tree.py：整合树模型特征
+
 offline_for_lgb.py：训练lightgbm模型
+
 offline_for_cbt.py：训练catboost模型
